@@ -9,31 +9,32 @@ contract Casino {
     address[] public players;
 
     struct Player {
-       uint256 amountBet;
-       uint256 numberSelected; 
+        uint256 amountBet;
+        uint256 numberSelected;
     }
     // The address of the player and => the user info
-    mapping( address  => Player) public playerInfo;
+    mapping(address => Player) public playerInfo;
 
     function() public payable {}
 
-    function Casino(uint256 _minimumBet ){
+    function Casino(uint256 _minimumBet) {
         owner = msg.sender;
-        if(_minimumBet != 0 ) minimumBet = _minimumBet;
-    } 
-    function kill() public {
-        if(msg.sender == owner) selfdestruct(owner);
+        if (_minimumBet != 0) minimumBet = _minimumBet;
     }
 
-    function checkPlayerExists(address player) public constant returns(bool){
-        for(uint256 i = 0; i < players.lenght; i++){
-            if(players[i] == player) return true;
+    function kill() public {
+        if (msg.sender == owner) selfdestruct(owner);
+    }
+
+    function checkPlayerExists(address player) public constant returns (bool) {
+        for (uint256 i = 0; i < players.lenght; i++) {
+            if (players[i] == player) return true;
         }
         return false;
     }
 
-    // To bet for a number between 1 and 10 both inclusive 
-    function bet( uint256 numberSelected ) public payable {
+    // To bet for a number between 1 and 10 both inclusive
+    function bet(uint256 numberSelected) public payable {
         require(!checkPlayerExists(msg.sender));
         require(numberSelected >= 1 && numberSelected <= 10);
         require(msg.value >= minimumBet);
@@ -44,12 +45,12 @@ contract Casino {
 
         players.push(msg.sender);
         totalBet += msg.value;
-        if(numberOfBets >= maxAmountOfBets) generateNumberWinner();
+        if (numberOfBets >= maxAmountOfBets) generateNumberWinner();
     }
 
     // Generate a number between 1 and 10 that will be the winner
     function generateNumberWinner() public {
-        uint256 numberGenerated = block.number % 10 + 1;//This isn't secure
+        uint256 numberGenerated = (block.number % 10) + 1; //This isn't secure
         distributePrizes(numberGenerated);
     }
 
@@ -57,11 +58,11 @@ contract Casino {
     function distributePrizes(uint256 numberWinner) public {
         address[100] memory winners; // We have to create a temporary in memory array with fixed size
         uint256 count = 0; // This is the count of the array of winners
-        
-        for(uint256 i = 0; i < players.length; i++){
+
+        for (uint256 i = 0; i < players.length; i++) {
             address playerAddress = players[i];
 
-            if(playerInfo[playerAddress].numberSelected == numberWinner){
+            if (playerInfo[playerAddress].numberSelected == numberWinner) {
                 winners[count] = playerAddress;
                 count++;
             }
@@ -71,9 +72,16 @@ contract Casino {
         players.length = 0; // Delete all the players array
         uint256 winnerEtherAmount = totalBet / winners.length; // How much each winner gets
 
-        for(uint256 j = 0; j < count; j++){
-            if(winners[j] != address(0)) // Check that the address in this fixed array is not empty
-            winners[j].transfer(winnerEtherAmount);
+        for (uint256 j = 0; j < count; j++) {
+            if (winners[j] != address(0))
+                // Check that the address in this fixed array is not empty
+                winners[j].transfer(winnerEtherAmount);
         }
+    }
+
+    function resetData() {
+        players.length = 0; // Delete all the players array
+        totalBet = 0;
+        numberOfBets = 0;
     }
 }
