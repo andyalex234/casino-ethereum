@@ -40,7 +40,7 @@ contract Casino {
 
         playerInfo[msg.sender].amountBet = msg.value;
         playerInfo[msg.sender].numberSelected = numberSelected;
-        numberOfBets++:
+        numberOfBets++;
 
         players.push(msg.sender);
         totalBet += msg.value;
